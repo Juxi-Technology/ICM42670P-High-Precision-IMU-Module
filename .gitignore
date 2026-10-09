@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# setuptools / PyInstaller
+build/
+dist/
+
+# ROS 2 (colcon)
+install/
+log/
+
+# ROS 1
+devel/
+
+# 编辑器 / 系统
+.marscode/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

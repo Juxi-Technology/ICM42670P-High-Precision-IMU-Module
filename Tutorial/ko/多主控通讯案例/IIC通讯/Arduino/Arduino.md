@@ -1,0 +1,142 @@
+# Arduino
+
+이번 예제에서는 Arduino Nano 개발 보드, Windows 컴퓨터 1대, 점퍼 와이어 약간, IMU 자세 센서를 사용합니다.
+
+[Arduino\.rar](/downloads/Arduino.rar)
+
+## 1\.장치 연결
+
+![高精度IMU姿态传感器 \(2\)\.png](../../../../en/多主控通讯案例/IIC通讯/Arduino/图片和附件/高精度IMU姿态传感器%20%282%29.png)
+
+![v2\-5bfe8060e5e61480044f79ff6d5e27cd\_r\.jpg](../../../../en/多主控通讯案例/IIC通讯/Arduino/图片和附件/v2-5bfe8060e5e61480044f79ff6d5e27cd_r.jpg)
+
+## 2\.핵심 코드 분석
+
+구체적인 코드는 자료의 소스 코드를 참조하십시오.
+
+```C++
+/**
+ * @brief 通用读取传感器数据的辅助函数
+ *        Generic helper function to read sensor data
+ */
+static int read_sensor_data(uint8_t reg, uint8_t *buffer, uint16_t length, float out[], uint8_t out_size, float scale_factor, bool is_float)
+{
+    if (read_register(reg, buffer, length) != 0) {
+        return -1;
+    }
+    
+    if (out != NULL) {
+        if (is_float) {
+            // 부동소수점 데이터 처리
+            for (uint8_t i = 0; i < out_size; i++) {
+                out[i] = to_float(&buffer[i * 4]);
+            }
+        } else {
+            // 정수 데이터 처리 및 스케일 팩터 적용
+            for (uint8_t i = 0; i < out_size; i++) {
+                out[i] = to_int16(&buffer[i * 2]) * scale_factor;
+            }
+        }
+    }
+    return 0;
+}
+
+/**
+ * @brief 读取加速度数据（单位 g）
+ *        Read acceleration in g.
+ */
+int IMU_I2C_ReadAccelerometer(float out[3])
+{
+    uint8_t register_data[6];
+    return read_sensor_data(IMU_FUNC_RAW_ACCEL, register_data, 6, out, 3, ACCEL_SCALE_FACTOR, false);
+}
+
+/**
+ * @brief 读取角速度（单位 rad/s）
+ *        Read angular velocity in rad/s.
+ */
+int IMU_I2C_ReadGyroscope(float out[3])
+{
+    uint8_t register_data[6];
+    return read_sensor_data(IMU_FUNC_RAW_GYRO, register_data, 6, out, 3, GYRO_SCALE_FACTOR, false);
+}
+
+/**
+ * @brief 读取磁场强度（单位 uT）
+ *        Read magnetic field strength in micro tesla.
+ */
+int IMU_I2C_ReadMagnetometer(float out[3])
+{
+    uint8_t register_data[6];
+    return read_sensor_data(IMU_FUNC_RAW_MAG, register_data, 6, out, 3, MAG_SCALE_FACTOR, false);
+}
+
+/**
+ * @brief 读取四元数
+ *        Read quaternion (w, x, y, z).
+ */
+int IMU_I2C_ReadQuaternion(float out[4])
+{
+    uint8_t register_data[16];
+    return read_sensor_data(IMU_FUNC_QUAT, register_data, 16, out, 4, 1.0f, true);
+}
+
+/**
+ * @brief 读取欧拉角（弧度）
+ *        Read Euler angles (rad).
+ */
+int IMU_I2C_ReadEuler(float out[3])
+{
+    uint8_t register_data[12];
+    int result = read_sensor_data(IMU_FUNC_EULER, register_data, 12, out, 3, 1.0f, true);
+    
+    // 도수로 변환
+    if (result == 0 && out != NULL) {
+        out[0] *= RAD2DEG;
+        out[1] *= RAD2DEG;
+        out[2] *= RAD2DEG;
+    }
+    
+    return result;
+}
+/**
+ * @brief 读取气压相关数据：高度、温度、气压、气压差
+ *        Read barometric data: height, temperature, pressure, delta.
+ */
+int IMU_I2C_ReadBarometer(float out[4])
+{
+    uint8_t register_data[16];
+    if (read_register(IMU_FUNC_BARO, register_data, 16) != 0) {
+        return -1;
+    }
+    if (out != NULL) {
+        out[0] = to_float(&register_data[0]);
+        out[1] = to_float(&register_data[4]);
+        out[2] = to_float(&register_data[8]);
+        out[3] = to_float(&register_data[12]);
+    }
+    return 0;
+}
+
+```
+
+read\_sensor\_data\(\):센서 데이터를 읽는 범용 헬퍼 함수
+
+IMU\_I2C\_ReadAccelerometer\(\):가속도 데이터를 읽습니다(단위 g)
+
+IMU\_I2C\_ReadGyroscope\(\):각속도를 읽습니다(단위 rad/s)
+
+IMU\_I2C\_ReadQuaternion\(\):쿼터니언을 읽습니다
+
+IMU\_I2C\_ReadEuler\(\): 오일러 각을 읽습니다(라디안)
+
+IMU\_I2C\_ReadBarometer\(\):기압 관련 데이터를 읽습니다：고도, 온도, 기압, 기압차
+
+## 3\.IMU 데이터 읽기
+
+프로그램을 Arduino에 기록한 후 시리얼 어시스턴트를 열면(설정 파라미터는 아래 그림과 같음), IMU 모듈의 데이터가 계속 출력되는 것을 확인할 수 있습니다. IMU 모듈의 자세를 바꾸면 데이터가 변합니다.
+
+![截图\_20260226194619\.png](../../../../en/多主控通讯案例/IIC通讯/Arduino/图片和附件/截图_20260226194619.png)
+
+주의：위 내용은 10축 IMU의 데이터 읽기입니다. 6축에는 자력계(Magnetometer)와 기압계(Barometer) 데이터가 없고, 9축에는 기압계(Barometer) 데이터가 없습니다.
+

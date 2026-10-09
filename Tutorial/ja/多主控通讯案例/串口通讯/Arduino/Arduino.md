@@ -1,0 +1,191 @@
+# Arduino
+
+今回のサンプルではArduino Nano開発ボード、Windowsパソコン1台、ジャンパーワイヤー若干、IMU姿勢センサー、USB-TTLモジュールを使用します。
+
+[Arduino\.rar](/downloads/Arduino.rar)
+
+## 1\.デバイスの接続
+
+![高精度IMU姿态传感器\.png](../../../../en/多主控通讯案例/串口通讯/Arduino/图片和附件/高精度IMU姿态传感器.png)
+
+![高精度IMU姿态传感器 \(1\)\.png](../../../../en/多主控通讯案例/串口通讯/Arduino/图片和附件/高精度IMU姿态传感器%20%281%29.png)
+
+![v2\-5bfe8060e5e61480044f79ff6d5e27cd\_r\.jpg](../../../../en/多主控通讯案例/串口通讯/Arduino/图片和附件/v2-5bfe8060e5e61480044f79ff6d5e27cd_r.jpg)
+
+## 2\.主要コードの解説
+
+具体的なコードは資料内のソースコードを参照してください。
+
+```C++
+//リングバッファ内のデータを解析し、完全なフレームを抽出してキャッシュを更新
+​
+//Process RX ring buffer, parse frames and update internal cache
+​
+void IMU_UART_Process(void)
+{
+    enum {
+        RX_STATE_EXPECT_HEAD1 = 0,
+        RX_STATE_EXPECT_HEAD2,
+        RX_STATE_EXPECT_LENGTH,
+        RX_STATE_EXPECT_FUNCTION,
+        RX_STATE_COLLECT_DATA
+    };
+
+    static uint8_t  rx_state = RX_STATE_EXPECT_HEAD1;
+    static uint8_t  frame_length = 0;
+    static uint8_t  frame_function = 0;
+    static uint8_t  frame_buffer[64]; /* 数据区 + 校验 / data section + checksum */
+    static uint16_t frame_index = 0;
+
+    uint8_t current_byte = 0;
+
+    // リングバッファ内のすべてのデータを処理
+    while (_rxbuf_pop(&current_byte) == 0) {
+        switch (rx_state) {
+        case RX_STATE_EXPECT_HEAD1:
+            // フレームヘッダ1を探す
+            if (current_byte == FRAME_HEAD1) {
+                rx_state = RX_STATE_EXPECT_HEAD2;
+            }
+            // そうでなければ現在の状態を維持
+            break;
+
+        case RX_STATE_EXPECT_HEAD2:
+            // フレームヘッダ2を探す
+            if (current_byte == FRAME_HEAD2) {
+                rx_state = RX_STATE_EXPECT_LENGTH;
+            } else {
+                // フレームヘッダが一致しないため、探し直し
+                rx_state = RX_STATE_EXPECT_HEAD1;
+            }
+            break;
+
+        case RX_STATE_EXPECT_LENGTH:
+            // フレーム長を保存
+            frame_length = current_byte;
+            rx_state = RX_STATE_EXPECT_FUNCTION;
+            break;
+
+        case RX_STATE_EXPECT_FUNCTION:
+            // 機能コードを保存
+            frame_function = current_byte;
+            frame_index = 0;
+            rx_state = RX_STATE_COLLECT_DATA;
+            break;
+
+        case RX_STATE_COLLECT_DATA: {
+            // データ長を計算（フレーム長 - フレームヘッダ2バイト - 長さ1バイト - 機能コード1バイト）
+            uint16_t data_length = (frame_length >= 4) ? (uint16_t)(frame_length - 4) : 0;
+            
+            // データ長が有効か確認
+            if (data_length == 0 || data_length > sizeof(frame_buffer)) {
+                rx_state = RX_STATE_EXPECT_HEAD1;
+                break;
+            }
+
+            // 現在のバイトを保存
+            frame_buffer[frame_index++] = current_byte;
+            
+            // すべてのデータを収集したか確認
+            if (frame_index >= data_length) {
+                // チェックサムを計算
+                uint8_t calculated_checksum = (uint8_t)(FRAME_HEAD1 + FRAME_HEAD2 + frame_length + frame_function);
+                for (uint16_t i = 0; i < data_length - 1; ++i) {
+                    calculated_checksum += frame_buffer[i];
+                }
+
+                // チェックサムを検証
+                uint8_t received_checksum = frame_buffer[data_length - 1];
+                if (calculated_checksum == received_checksum) {
+                    // チェックサム検証に成功、データを解析
+                    _parse_frame_data(frame_function, frame_buffer);
+                }
+                
+                // 状態をリセットし、次のフレームの受信を準備
+                rx_state = RX_STATE_EXPECT_HEAD1;
+            }
+        } break;
+
+        default:
+            // 未知の状態、リセット
+            rx_state = RX_STATE_EXPECT_HEAD1;
+            break;
+        }
+    }
+}
+​
+​
+/* ---------- 解析数据帧 / Parse one complete frame ---------- */
+static void _parse_frame_data(uint8_t frame_function, const uint8_t *frame_data)
+{
+    switch (frame_function) {
+        case IMU_FUNC_RAW_ACCEL: {
+            // 定数の比例因子を定義
+            const float ACCEL_RATIO = 16.0f / 32767.0f;
+            const float DEG2RAD = 3.14159265358979323846f / 180.0f;
+            const float GYRO_RATIO = (2000.0f / 32767.0f) * DEG2RAD;
+            const float MAG_RATIO = 800.0f / 32767.0f;
+            
+            // 加速度データを解析
+            s_ax = to_int16(&frame_data[0])  * ACCEL_RATIO;
+            s_ay = to_int16(&frame_data[2])  * ACCEL_RATIO;
+            s_az = to_int16(&frame_data[4])  * ACCEL_RATIO;
+
+            // ジャイロデータを解析
+            s_gx = to_int16(&frame_data[6])  * GYRO_RATIO;
+            s_gy = to_int16(&frame_data[8])  * GYRO_RATIO;
+            s_gz = to_int16(&frame_data[10]) * GYRO_RATIO;
+
+            // 磁力計データを解析
+            s_mx = to_int16(&frame_data[12]) * MAG_RATIO;
+            s_my = to_int16(&frame_data[14]) * MAG_RATIO;
+            s_mz = to_int16(&frame_data[16]) * MAG_RATIO;
+            break;
+        }
+        case IMU_FUNC_EULER:
+            s_roll  = to_float(&frame_data[0]);
+            s_pitch = to_float(&frame_data[4]);
+            s_yaw   = to_float(&frame_data[8]);
+            break;
+        case IMU_FUNC_QUAT:
+            s_q0 = to_float(&frame_data[0]);
+            s_q1 = to_float(&frame_data[4]);
+            s_q2 = to_float(&frame_data[8]);
+            s_q3 = to_float(&frame_data[12]);
+            break;
+        case IMU_FUNC_BARO:
+            s_height            = to_float(&frame_data[0]);
+            s_temperature       = to_float(&frame_data[4]);
+            s_pressure          = to_float(&frame_data[8]);
+            s_pressure_contrast = to_float(&frame_data[12]);
+            break;
+        case IMU_FUNC_VERSION:
+            s_version_high = frame_data[0];
+            s_version_mid  = frame_data[1];
+            s_version_low  = frame_data[2];
+            break;
+        case IMU_FUNC_RETURN_STATE:
+            s_last_rx_function = frame_data[0];
+            s_last_rx_state    = (int16_t)frame_data[1];
+            break;
+        default:
+            // 未知のフレームタイプ、エラー処理を追加可能
+            break;
+    }
+}
+```
+
+IMU\_UART\_Process\(\): キャッシュされたデータを読み取り、\_parse\_frame\_dataを呼び出して通信プロトコルに適合するデータを解析します。
+
+\_parse\_frame\_data\(\)：データフレームを解析します。
+
+## 3\.IMUデータの読み取り
+
+プログラムをArduinoに書き込んだ後、シリアルアシスタントを開くと（設定パラメータは下図のとおり）、IMUモジュールのデータが継続的に出力されているのが確認できます。IMUモジュールの姿勢を変えると、データが変化します。
+
+![截图\_20260226183106\.png](../../../../en/多主控通讯案例/串口通讯/Arduino/图片和附件/截图_20260226183106.png)
+
+注意：以上は10軸IMUのデータ読み取りです。6軸には磁力計（Magnetometer）と気圧計（Barometer）のデータがなく、9軸には気圧計（Barometer）のデータがありません。
+
+
+

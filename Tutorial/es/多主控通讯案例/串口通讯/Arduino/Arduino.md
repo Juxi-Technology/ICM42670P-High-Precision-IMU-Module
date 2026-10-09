@@ -1,0 +1,191 @@
+# Arduino
+
+En este ejemplo se utiliza una placa de desarrollo Arduino Nano, un ordenador con Windows, varios cables Dupont, un sensor de actitud IMU y un módulo USB a TTL.
+
+[Arduino\.rar](/downloads/Arduino.rar)
+
+## 1\.Conexión del dispositivo
+
+![高精度IMU姿态传感器\.png](../../../../en/多主控通讯案例/串口通讯/Arduino/图片和附件/高精度IMU姿态传感器.png)
+
+![高精度IMU姿态传感器 \(1\)\.png](../../../../en/多主控通讯案例/串口通讯/Arduino/图片和附件/高精度IMU姿态传感器%20%281%29.png)
+
+![v2\-5bfe8060e5e61480044f79ff6d5e27cd\_r\.jpg](../../../../en/多主控通讯案例/串口通讯/Arduino/图片和附件/v2-5bfe8060e5e61480044f79ff6d5e27cd_r.jpg)
+
+## 2\.Análisis del código clave
+
+Consulte el código fuente en los materiales para ver el código concreto.
+
+```C++
+//Analizar los datos del búfer circular, extraer tramas completas y actualizar la caché
+​
+//Process RX ring buffer, parse frames and update internal cache
+​
+void IMU_UART_Process(void)
+{
+    enum {
+        RX_STATE_EXPECT_HEAD1 = 0,
+        RX_STATE_EXPECT_HEAD2,
+        RX_STATE_EXPECT_LENGTH,
+        RX_STATE_EXPECT_FUNCTION,
+        RX_STATE_COLLECT_DATA
+    };
+
+    static uint8_t  rx_state = RX_STATE_EXPECT_HEAD1;
+    static uint8_t  frame_length = 0;
+    static uint8_t  frame_function = 0;
+    static uint8_t  frame_buffer[64]; /* 数据区 + 校验 / data section + checksum */
+    static uint16_t frame_index = 0;
+
+    uint8_t current_byte = 0;
+
+    // Procesar todos los datos del búfer circular
+    while (_rxbuf_pop(&current_byte) == 0) {
+        switch (rx_state) {
+        case RX_STATE_EXPECT_HEAD1:
+            // Buscar la cabecera de trama 1
+            if (current_byte == FRAME_HEAD1) {
+                rx_state = RX_STATE_EXPECT_HEAD2;
+            }
+            // De lo contrario, permanecer en el estado actual
+            break;
+
+        case RX_STATE_EXPECT_HEAD2:
+            // Buscar la cabecera de trama 2
+            if (current_byte == FRAME_HEAD2) {
+                rx_state = RX_STATE_EXPECT_LENGTH;
+            } else {
+                // La cabecera no coincide, reiniciar la búsqueda
+                rx_state = RX_STATE_EXPECT_HEAD1;
+            }
+            break;
+
+        case RX_STATE_EXPECT_LENGTH:
+            // Guardar la longitud de la trama
+            frame_length = current_byte;
+            rx_state = RX_STATE_EXPECT_FUNCTION;
+            break;
+
+        case RX_STATE_EXPECT_FUNCTION:
+            // Guardar el código de función
+            frame_function = current_byte;
+            frame_index = 0;
+            rx_state = RX_STATE_COLLECT_DATA;
+            break;
+
+        case RX_STATE_COLLECT_DATA: {
+            // Calcular la longitud de datos (longitud de trama - cabecera 2 bytes - longitud 1 byte - código de función 1 byte)
+            uint16_t data_length = (frame_length >= 4) ? (uint16_t)(frame_length - 4) : 0;
+            
+            // Comprobar si la longitud de datos es válida
+            if (data_length == 0 || data_length > sizeof(frame_buffer)) {
+                rx_state = RX_STATE_EXPECT_HEAD1;
+                break;
+            }
+
+            // Almacenar el byte actual
+            frame_buffer[frame_index++] = current_byte;
+            
+            // Comprobar si se han recogido todos los datos
+            if (frame_index >= data_length) {
+                // Calcular la suma de verificación
+                uint8_t calculated_checksum = (uint8_t)(FRAME_HEAD1 + FRAME_HEAD2 + frame_length + frame_function);
+                for (uint16_t i = 0; i < data_length - 1; ++i) {
+                    calculated_checksum += frame_buffer[i];
+                }
+
+                // Verificar la suma de verificación
+                uint8_t received_checksum = frame_buffer[data_length - 1];
+                if (calculated_checksum == received_checksum) {
+                    // Verificación superada, analizar los datos
+                    _parse_frame_data(frame_function, frame_buffer);
+                }
+                
+                // Restablecer el estado y prepararse para recibir la siguiente trama
+                rx_state = RX_STATE_EXPECT_HEAD1;
+            }
+        } break;
+
+        default:
+            // Estado desconocido, restablecer
+            rx_state = RX_STATE_EXPECT_HEAD1;
+            break;
+        }
+    }
+}
+​
+​
+/* ---------- 解析数据帧 / Parse one complete frame ---------- */
+static void _parse_frame_data(uint8_t frame_function, const uint8_t *frame_data)
+{
+    switch (frame_function) {
+        case IMU_FUNC_RAW_ACCEL: {
+            // Definir el factor de escala constante
+            const float ACCEL_RATIO = 16.0f / 32767.0f;
+            const float DEG2RAD = 3.14159265358979323846f / 180.0f;
+            const float GYRO_RATIO = (2000.0f / 32767.0f) * DEG2RAD;
+            const float MAG_RATIO = 800.0f / 32767.0f;
+            
+            // Analizar los datos de aceleración
+            s_ax = to_int16(&frame_data[0])  * ACCEL_RATIO;
+            s_ay = to_int16(&frame_data[2])  * ACCEL_RATIO;
+            s_az = to_int16(&frame_data[4])  * ACCEL_RATIO;
+
+            // Analizar los datos del giroscopio
+            s_gx = to_int16(&frame_data[6])  * GYRO_RATIO;
+            s_gy = to_int16(&frame_data[8])  * GYRO_RATIO;
+            s_gz = to_int16(&frame_data[10]) * GYRO_RATIO;
+
+            // Analizar los datos del magnetómetro
+            s_mx = to_int16(&frame_data[12]) * MAG_RATIO;
+            s_my = to_int16(&frame_data[14]) * MAG_RATIO;
+            s_mz = to_int16(&frame_data[16]) * MAG_RATIO;
+            break;
+        }
+        case IMU_FUNC_EULER:
+            s_roll  = to_float(&frame_data[0]);
+            s_pitch = to_float(&frame_data[4]);
+            s_yaw   = to_float(&frame_data[8]);
+            break;
+        case IMU_FUNC_QUAT:
+            s_q0 = to_float(&frame_data[0]);
+            s_q1 = to_float(&frame_data[4]);
+            s_q2 = to_float(&frame_data[8]);
+            s_q3 = to_float(&frame_data[12]);
+            break;
+        case IMU_FUNC_BARO:
+            s_height            = to_float(&frame_data[0]);
+            s_temperature       = to_float(&frame_data[4]);
+            s_pressure          = to_float(&frame_data[8]);
+            s_pressure_contrast = to_float(&frame_data[12]);
+            break;
+        case IMU_FUNC_VERSION:
+            s_version_high = frame_data[0];
+            s_version_mid  = frame_data[1];
+            s_version_low  = frame_data[2];
+            break;
+        case IMU_FUNC_RETURN_STATE:
+            s_last_rx_function = frame_data[0];
+            s_last_rx_state    = (int16_t)frame_data[1];
+            break;
+        default:
+            // Tipo de trama desconocido; se puede añadir gestión de errores
+            break;
+    }
+}
+```
+
+IMU\_UART\_Process\(\): lee los datos de la caché y llama a \_parse\_frame\_data para analizar los datos que cumplen el protocolo de comunicación.
+
+\_parse\_frame\_data\(\): analiza la trama de datos.
+
+## 3\.Lectura de datos de la imu
+
+Tras descargar el programa en el Arduino, abra el asistente de puerto serie (con los parámetros de configuración como se muestra en la figura siguiente); podrá ver que se imprimen continuamente los datos del módulo IMU, y cuando cambiamos la actitud del módulo IMU, los datos cambian.
+
+![截图\_20260226183106\.png](../../../../en/多主控通讯案例/串口通讯/Arduino/图片和附件/截图_20260226183106.png)
+
+Nota: lo anterior corresponde a la lectura de datos de una IMU de 10 ejes; la de 6 ejes no dispone de datos de magnetómetro (Magnetometer) ni de barómetro (Barometer), y la de 9 ejes no dispone de datos de barómetro (Barometer).
+
+
+
