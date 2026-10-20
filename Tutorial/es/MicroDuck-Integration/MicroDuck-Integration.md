@@ -7,7 +7,9 @@ Este módulo puede sustituir la IMU del tronco de MicroDuck — la placa `imu_to
 | | |
 |---|---|
 | Cadena de datos de la IMU: muestreo, decodificación, ranuras de observación | **verificada en hardware real** |
-| Integración en el runtime de MicroDuck (`robotd`) | **aún no implementada** |
+| Integración en el runtime de MicroDuck (`robotd`) | **planificada para la fase de integración** |
+
+> **Alcance**: el módulo I²C externo es una solución transitoria. El diseño final integrará la IMU en el hardware del robot y el controlador principal; el cableado, los ejes y la calibración de esta página seguirán siendo válidos.
 
 **Guía completa y código: [Juxi-Technology/imu-displace-microduck](https://github.com/Juxi-Technology/imu-displace-microduck)**
 
@@ -51,3 +53,10 @@ Medido en un Jetson Orin Nano con `/dev/i2c-7`: 99,4 Hz, 0,92 ms por muestra, si
 Los ejes del módulo coinciden con los del tronco — **X adelante / Y izquierda / Z arriba** — lo que físicamente significa **cara de componentes hacia arriba, Type-C hacia atrás**. Así la rotación de montaje es la **identidad**.
 
 El sistema de referencia propio del módulo, medido en tres poses ortogonales: plano con la cara de componentes arriba, la gravedad vale `[0, 0, -1]`; Type-C arriba, `[1, 0, 0]`; de canto con la cara de componentes a la derecha, `[0, 1, 0]`.
+
+---
+## Próximos pasos
+
+- Integrar el módulo en el runtime de `robotd`: ruta de bus, origen de la IMU y montaje configurables.
+- Dar a la IMU su propio hilo de captura y una ranura compartida para que la lectura I²C no ocupe el ciclo de control.
+- Validar el robot completo con el bus real de 15 servos y la política de marcha; el diseño final integrará la IMU en el hardware del robot y el controlador principal.
