@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="JuxiTech 高精度 IMU 惯导模块网页上位机：串口连接、实时监测、曲线、3D 姿态、动态仪表与传感器校准。">
+<title>JX IMU Studio · 高精度惯导模块</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div class="bg-grid" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+      <defs>
+        <linearGradient id="brandGradient" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#2fe3c4"/>
+          <stop offset="1" stop-color="#4c8dff"/>
+        </linearGradient>
+      </defs>
+      <rect x="7" y="7" width="26" height="26" rx="7" fill="none" stroke="url(#brandGradient)" stroke-width="2"/>
+      <rect x="14" y="14" width="12" height="12" rx="3" fill="url(#brandGradient)" opacity=".9"/>
+      <g stroke="url(#brandGradient)" stroke-width="1.8" stroke-linecap="round">
+        <path d="M12 3v4M20 3v4M28 3v4M12 33v4M20 33v4M28 33v4M3 12h4M3 20h4M3 28h4M33 12h4M33 20h4M33 28h4"/>
+      </g>
+    </svg>
+    <div class="brand-copy">
+      <h1>JX IMU Studio</h1>
+      <p data-i18n="app.subtitle">ICM42670P · 高精度 IMU 惯导模块</p>
+    </div>
+  </div>
+  <div class="topbar-side">
+    <button id="langBtn" class="lang-btn" type="button" title="Switch language">EN</button>
+    <div class="status-pill" id="statusPill" data-state="off">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span id="statusText" data-i18n="status.off">未连接</span>
+    </div>
+  </div>
+</header>
+
+<main class="shell">
+  <!-- ============ 连接面板 ============ -->
+  <section class="conn-card panel" id="connCard" aria-label="Connection">
+    <div class="conn-fields">
+      <div class="field port-field" id="portField">
+        <label data-i18n="port.label">串口设备</label>
+        <button type="button" id="portBtn" class="select-btn" title="Web Serial">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7V3m6 4V3M7 7h10v4a5 5 0 0 1-5 5v0a5 5 0 0 1-5-5V7Zm5 9v5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="portLabel" class="muted" data-i18n="port.choose">选择串口设备…</span>
+        </button>
+      </div>
+
+      <div class="field field-narrow">
+        <label for="algoSelect" data-i18n="algo.label">融合算法</label>
+        <select id="algoSelect">
+          <option value="6" data-i18n="algo.6">6 轴</option>
+          <option value="9" selected data-i18n="algo.9">9 轴</option>
+          <option value="10" data-i18n="algo.10">10 轴</option>
+        </select>
+      </div>
+
+      <div class="field field-narrow">
+        <label for="declInput" data-i18n="decl.label">磁偏角</label>
+        <div class="input-suffix">
+          <input id="declInput" type="number" min="-180" max="180" step="0.5" value="0" inputmode="decimal">
+          <span>°</span>
+        </div>
+      </div>
+
+      <div class="field toggles-field">
+        <label class="switch-row" title="Pitch / Roll invert">
+          <input type="checkbox" id="pitchFlip">
+          <span class="switch" aria-hidden="true"></span>
+          <span data-i18n="pitchflip.label">俯仰翻转</span>
+        </label>
+        <label class="switch-row" title="Compass invert">
+          <input type="checkbox" id="compassInvert">
+          <span class="switch" aria-hidden="true"></span>
+          <span data-i18n="compassinvert.label">罗盘反向</span>
+        </label>
+      </div>
+
+      <div class="field field-connect">
+        <button id="connectBtn" class="btn-primary" type="button">
+          <span id="connectBtnText" data-i18n="connect">连接</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13m-5-5 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="conn-info" id="connInfo">
+      <span class="muted" data-i18n="conn.hint">选择串口设备并连接，开始实时监测与校准。</span>
+    </div>
+  </section>
+
+  <!-- ============ 页签 ============ -->
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab-btn active" type="button" data-tab="monitor" role="tab" aria-selected="true">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2.5-6 4 12 2.5-6H21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span data-i18n="tabs.monitor">数据监测</span>
+    </button>
+    <button class="tab-btn" type="button" data-tab="plots" role="tab" aria-selected="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5m0 14h16M7 15l3.5-4.5 3 2.5L18 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span data-i18n="tabs.plots">实时曲线</span>
+    </button>
+    <button class="tab-btn" type="button" data-tab="attitude" role="tab" aria-selected="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Zm0 0v9m8-4.5-8 4.5-8-4.5m8 4.5V21" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      <span data-i18n="tabs.attitude">3D 姿态</span>
+    </button>
+    <button class="tab-btn" type="button" data-tab="instruments" role="tab" aria-selected="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 12l4-4M12 3.5v2M20.5 12h-2M12 20.5v-2M3.5 12h2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+      <span data-i18n="tabs.instruments">动态仪表</span>
+    </button>
+    <button class="tab-btn" type="button" data-tab="calibrate" role="tab" aria-selected="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9m3 0h4M4 17h4m3 0h9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="15" cy="7" r="2.2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="9" cy="17" r="2.2" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+      <span data-i18n="tabs.calibrate">校准</span>
+    </button>
+  </nav>
+
+  <!-- ============ 数据监测 ============ -->
+  <section id="panel-monitor" class="tab-panel active" data-panel="monitor">
+    <div class="monitor-grid">
+      <article class="panel sensor-card">
+        <header class="card-head">
+          <h2 data-i18n="monitor.accel">加速度计</h2>
+          <span class="unit-chip" data-i18n="units.g">g</span>
+        </header>
+        <div class="axes axes-3">
+          <div class="axis"><span class="axis-label ax-x">X</span><span class="axis-value" data-val="accel.0">--</span><span class="meter"><i data-bar="accel.0"></i></span></div>
+          <div class="axis"><span class="axis-label ax-y">Y</span><span class="axis-value" data-val="accel.1">--</span><span class="meter"><i data-bar="accel.1"></i></span></div>
+          <div class="axis"><span class="axis-label ax-z">Z</span><span class="axis-value" data-val="accel.2">--</span><span class="meter"><i data-bar="accel.2"></i></span></div>
+        </div>
+      </article>
+
+      <article class="panel sensor-card">
+        <header class="card-head">
+          <h2 data-i18n="monitor.gyro">陀螺仪</h2>
+          <span class="unit-chip" data-i18n="units.rads">rad/s</span>
+        </header>
+        <div class="axes axes-3">
+          <div class="axis"><span class="axis-label ax-x">X</span><span class="axis-value" data-val="gyro.0">--</span><span class="meter"><i data-bar="gyro.0"></i></span></div>
+          <div class="axis"><span class="axis-label ax-y">Y</span><span class="axis-value" data-val="gyro.1">--</span><span class="meter"><i data-bar="gyro.1"></i></span></div>
+          <div class="axis"><span class="axis-label ax-z">Z</span><span class="axis-value" data-val="gyro.2">--</span><span class="meter"><i data-bar="gyro.2"></i></span></div>
+        </div>
+      </article>
+
+      <article class="panel sensor-card">
+        <header class="card-head">
+          <h2 data-i18n="monitor.mag">磁力计</h2>
+          <span class="unit-chip" data-i18n="units.ut">μT</span>
+        </header>
+        <div class="axes axes-3">
+          <div class="axis"><span class="axis-label ax-x">X</span><span class="axis-value" data-val="mag.0">--</span><span class="meter"><i data-bar="mag.0"></i></span></div>
+          <div class="axis"><span class="axis-label ax-y">Y</span><span class="axis-value" data-val="mag.1">--</span><span class="meter"><i data-bar="mag.1"></i></span></div>
+          <div class="axis"><span class="axis-label ax-z">Z</span><span class="axis-value" data-val="mag.2">--</span><span class="meter"><i data-bar="mag.2"></i></span></div>
+        </div>
+      </article>
+
+      <article class="panel sensor-card highlight">
+        <header class="card-head">
+          <h2 data-i18n="monitor.euler">欧拉角</h2>
+          <span class="unit-chip" data-i18n="units.deg">°</span>
+        </header>
+        <div class="axes axes-3">
+          <div class="axis"><span class="axis-label ax-roll" data-i18n="euler.roll">Roll</span><span class="axis-value big" data-val="attitude.0">--</span><span class="meter"><i data-bar="attitude.0"></i></span></div>
+          <div class="axis"><span class="axis-label ax-pitch" data-i18n="euler.pitch">Pitch</span><span class="axis-value big" data-val="attitude.1">--</span><span class="meter"><i data-bar="attitude.1"></i></span></div>
+          <div class="axis"><span class="axis-label ax-yaw" data-i18n="euler.yaw">Yaw</span><span class="axis-value big" data-val="attitude.2">--</span><span class="meter"><i data-bar="attitude.2"></i></span></div>
+        </div>
+      </article>
+
+      <article class="panel sensor-card">
+        <header class="card-head">
+          <h2 data-i18n="monitor.quat">四元数</h2>
+          <span class="unit-chip" data-i18n="units.quat">1</span>
+        </header>
+        <div class="axes axes-4">
+          <div class="axis"><span class="axis-label ax-w">W</span><span class="axis-value" data-val="quat.0">--</span><span class="meter"><i data-bar="quat.0"></i></span></div>
+          <div class="axis"><span class="axis-label ax-x">X</span><span class="axis-value" data-val="quat.1">--</span><span class="meter"><i data-bar="quat.1"></i></span></div>
+          <div class="axis"><span class="axis-label ax-y">Y</span><span class="axis-value" data-val="quat.2">--</span><span class="meter"><i data-bar="quat.2"></i></span></div>
+          <div class="axis"><span class="axis-label ax-z">Z</span><span class="axis-value" data-val="quat.3">--</span><span class="meter"><i data-bar="quat.3"></i></span></div>
+        </div>
+      </article>
+
+      <article class="panel sensor-card">
+        <header class="card-head">
+          <h2 data-i18n="monitor.baro">气压计</h2>
+          <span class="unit-chip" data-i18n="units.baro">m · ℃ · hPa</span>
+        </header>
+        <div class="axes axes-2">
+          <div class="axis"><span class="axis-label" data-i18n="monitor.height">高度 (m)</span><span class="axis-value" data-val="baro.0">--</span></div>
+          <div class="axis"><span class="axis-label" data-i18n="monitor.temp">温度 (℃)</span><span class="axis-value" data-val="baro.1">--</span></div>
+          <div class="axis"><span class="axis-label" data-i18n="monitor.press">气压 (hPa)</span><span class="axis-value" data-val="baro.2">--</span></div>
+          <div class="axis"><span class="axis-label" data-i18n="monitor.refPress">参考气压 (hPa)</span><span class="axis-value" data-val="baro.3">--</span></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ 实时曲线 ============ -->
+  <section id="panel-plots" class="tab-panel" data-panel="plots" hidden>
+    <div class="panel chart-panel">
+      <div class="chart-toolbar">
+        <div class="segmented group-seg" id="plotGroups">
+          <button type="button" data-group="accel" class="active" data-i18n="plots.accel">加速度计 (g)</button>
+          <button type="button" data-group="gyro" data-i18n="plots.gyro">陀螺仪 (rad/s)</button>
+          <button type="button" data-group="mag" data-i18n="plots.mag">磁力计 (μT)</button>
+          <button type="button" data-group="attitude" data-i18n="plots.euler">欧拉角 (°)</button>
+        </div>
+        <div class="toolbar-spacer"></div>
+        <span class="rate-chip" id="plotRate">—</span>
+        <button id="plotPauseBtn" class="btn-ghost" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6v12M15 6v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span id="plotPauseText" data-i18n="plots.pause">暂停</span>
+        </button>
+        <button id="plotClearBtn" class="btn-ghost" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16m-2 0-1 12H7L6 7m4 0V4h4v3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span data-i18n="plots.clear">清空</span>
+        </button>
+      </div>
+      <div class="chart-area">
+        <canvas id="plotCanvas"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 3D 姿态 ============ -->
+  <section id="panel-attitude" class="tab-panel" data-panel="attitude" hidden>
+    <div class="attitude-grid">
+      <div class="panel viewport-card">
+        <div class="viewport-head">
+          <div class="readout"><span>Roll</span><strong id="roRoll">--</strong></div>
+          <div class="readout"><span>Pitch</span><strong id="roPitch">--</strong></div>
+          <div class="readout"><span>Yaw</span><strong id="roYaw">--</strong></div>
+          <span class="zero-badge" id="zeroBadge" hidden data-i18n="attitude.zeroed">零位已标定</span>
+        </div>
+        <div class="viewport-body">
+          <canvas id="glCanvas"></canvas>
+          <div class="viewport-actions">
+            <button id="zeroBtn" class="btn-ghost" type="button" data-i18n="attitude.zero">标定当前位置</button>
+            <button id="resetZeroBtn" class="btn-ghost" type="button" data-i18n="attitude.resetZero">重置标定</button>
+          </div>
+          <div class="viewport-hint" data-i18n="attitude.hint">拖拽旋转视角 · 滚轮缩放</div>
+        </div>
+      </div>
+      <div class="panel compass-side">
+        <div class="panel-head">
+          <h2 data-i18n="instr.compass">指南针</h2>
+          <span class="value-badge" id="sideHeading">--</span>
+        </div>
+        <div class="gauge-body"><canvas id="sideCompass"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 动态仪表 ============ -->
+  <section id="panel-instruments" class="tab-panel" data-panel="instruments" hidden>
+    <div class="instruments-grid">
+      <div class="panel gauge-card">
+        <div class="panel-head">
+          <h2 data-i18n="instr.compass">指南针</h2>
+          <span class="value-badge" id="headingBadge">--</span>
+        </div>
+        <div class="gauge-body"><canvas id="compassCanvas"></canvas></div>
+        <div class="gauge-foot">
+          <span data-i18n="instr.heading">航向角</span>
+          <strong id="headingVal">--</strong>
+        </div>
+      </div>
+
+      <div class="panel gauge-card">
+        <div class="panel-head">
+          <h2 data-i18n="instr.horizon">人工地平仪</h2>
+          <span class="value-badge soft" id="horizonBadge">--</span>
+        </div>
+        <div class="gauge-body"><canvas id="horizonCanvas"></canvas></div>
+        <div class="gauge-foot double">
+          <span><label data-i18n="instr.pitch">俯仰</label><strong id="pitchVal">--</strong></span>
+          <span><label data-i18n="instr.roll">横滚</label><strong id="rollVal">--</strong></span>
+          <span class="hint" data-i18n="instr.horizonHint">地平线在上 = 抬头</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 校准 ============ -->
+  <section id="panel-calibrate" class="tab-panel" data-panel="calibrate" hidden>
+    <div class="cal-grid">
+      <div class="cal-left">
+        <div class="panel cal-intro">
+          <div class="panel-head">
+            <h2 data-i18n="cal.title">传感器校准</h2>
+            <span class="tag" data-i18n="cal.badge">设备 Flash 保存</span>
+          </div>
+          <p class="intro-text" data-i18n="cal.intro">校准值保存在设备 Flash 中。请在连接设备后按下方指引逐项执行，校准过程中保持设备稳定并远离磁干扰。</p>
+          <ul class="cal-guide">
+            <li>
+              <span class="guide-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/></svg></span>
+              <div><b data-i18n="cal.imuName">整体校准</b><small data-i18n="cal.imuDesc">设备静止平放于水平面，消除加速度计与陀螺仪零偏。</small></div>
+            </li>
+            <li>
+              <span class="guide-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v7a5 5 0 0 0 10 0V4M7 8h3m4 0h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+              <div><b data-i18n="cal.magName">磁力计校准</b><small data-i18n="cal.magDesc">缓慢转动设备走“8”字轨迹，进行椭球拟合。</small></div>
+            </li>
+            <li>
+              <span class="guide-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13V6a2 2 0 1 1 4 0v7m0-2a2 2 0 1 1 4 0v3a6 6 0 0 1-6 6h-1a6 6 0 0 1-6-6v-2a2 2 0 1 1 4 0" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <div><b data-i18n="cal.tempName">温度校准</b><small data-i18n="cal.tempDesc">输入标准温度计读数，校正温度传感器。</small></div>
+            </li>
+            <li>
+              <span class="guide-icon warn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 3-6.2M4 4v5h5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <div><b data-i18n="cal.resetName">重置校准数据</b><small data-i18n="cal.resetDesc">清空设备内已保存的全部校准值，谨慎操作。</small></div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="panel cal-actions">
+          <div class="panel-head">
+            <h2 data-i18n="cal.actions">校准操作</h2>
+            <span class="cal-status" id="calStatus" data-state="idle" data-i18n="cal.ready">就绪</span>
+          </div>
+          <div class="cal-tiles">
+            <button class="cal-tile" type="button" data-calib="imu">
+              <span class="tile-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6.5" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+              <strong data-i18n="cal.imuName">整体校准</strong>
+              <small data-i18n="cal.imuTile">静止平放 · 约 5 秒</small>
+            </button>
+            <button class="cal-tile" type="button" data-calib="mag">
+              <span class="tile-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v7a5 5 0 0 0 10 0V4M7 8h3m4 0h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+              <strong data-i18n="cal.magName">磁力计校准</strong>
+              <small data-i18n="cal.magTile">8 字转动 · 10–30 秒</small>
+            </button>
+            <button class="cal-tile danger" type="button" data-calib="reset">
+              <span class="tile-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 3-6.2M4 4v5h5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <strong data-i18n="cal.resetName">重置校准数据</strong>
+              <small data-i18n="cal.resetTile">清空 Flash 校准数据</small>
+            </button>
+          </div>
+          <div class="temp-row">
+            <label for="tempInput" data-i18n="cal.tempLabel">当前环境温度</label>
+            <div class="input-suffix">
+              <input id="tempInput" type="number" min="-50" max="50" step="0.1" value="25" inputmode="decimal">
+              <span>°C</span>
+            </div>
+            <button class="btn-ghost" id="tempCalBtn" type="button" data-calib="temp" data-i18n="cal.tempStart">开始温度校准</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel cal-log-card">
+        <div class="panel-head">
+          <h2 data-i18n="cal.logTitle">执行日志</h2>
+          <button id="clearLogBtn" class="btn-mini" type="button" data-i18n="cal.clearLog">清空</button>
+        </div>
+        <div class="cal-log" id="calLog" role="log" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <span data-i18n="footer.note">支持 Chrome / Edge 桌面版 · 串口 115200 · Web Serial 需 HTTPS 或 localhost</span>
+  </footer>
+</main>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<noscript><div class="noscript">需要启用 JavaScript 才能使用本工具。</div></noscript>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
