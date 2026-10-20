@@ -1,0 +1,22 @@
+# PC通訊
+
+**注意：如果無法識別串口，請安裝ch340驅動**
+
+1、IMU姿態傳感器通過type\-c數據線連接電腦端
+
+![高精度IMU姿态传感器\.png](../../../en/Multi-Master-Communication-Cases/PC-Communication/Images/high-precision-imu-attitude-sensor.png)
+
+2、查看串口數據
+
+將串口助手配置如下圖所示，
+
+![image\.png](../../../en/Multi-Master-Communication-Cases/PC-Communication/Images/image.png)
+
+串口列印的是沒有經過處理的數據，具體數據含義可參考 “**通信協定**” 文檔。
+
+[IMU模組\-串口與I2C通訊協定\.xlsx](../../../../Multi-master%20communication%20case/Serial&I2C%20Communication%20Protocol.xlsx)
+
+
+
+
+

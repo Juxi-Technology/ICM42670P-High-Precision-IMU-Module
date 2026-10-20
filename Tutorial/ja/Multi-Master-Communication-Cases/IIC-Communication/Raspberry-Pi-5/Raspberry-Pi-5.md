@@ -1,0 +1,121 @@
+# Raspberry Pi 5
+
+## 1\.デバイスの接続
+
+本チュートリアルではRaspberry Pi 5ボード、公式64ビット版のイメージを例にします。
+
+IMU姿勢センサーを下図のようにRaspberry Pi 5のI2Cインターフェースに接続します。
+
+![树莓派5 IIC通讯\.jpg](../../../../en/Multi-Master-Communication-Cases/IIC-Communication/Raspberry-Pi-5/Images/raspberry-pi-5-iic-communication.jpg)
+
+![image\.png](../../../../en/Multi-Master-Communication-Cases/IIC-Communication/Raspberry-Pi-5/Images/image.png)
+
+## 2\.デバイス状態の確認
+
+まずI2Ctoolをインストールします。ターミナルに入力：
+
+```PowerShell
+sudo apt-get update
+sudo apt-get install -y i2c-tools
+```
+
+I2Cデバイスを確認します
+
+```PowerShell
+sudo i2cdetect -y -r -a 1
+```
+
+![截图\_20260203181146\.png](../../../../en/Multi-Master-Communication-Cases/IIC-Communication/Raspberry-Pi-5/Images/screenshot-20260203181146.png)
+
+## 3\.ドライバライブラリのインストール
+
+3\.1**コードに必要なPythonライブラリのインストール**
+
+```PowerShell
+sudo apt update
+sudo apt install -y python3-serial
+sudo apt install -y python3-smbus2
+```
+
+3\.2 ファイルの転送
+
+[IMU\_ROS2\.zip](/downloads/IMU_ROS2.zip)
+
+MobaXtermでのファイル転送方法がまだわからない方は、以下のWebページでMobaXtermの詳細なインストールと操作方法を確認してください：[ファイルリモート転送](https://juxitech.feishu.cn/wiki/KB0Jw2o6Wis9f0ksyeFceVmgnfd)
+
+MobaXtermソフトで 解凍後のファイル を Raspberry Pi 5 にドラッグします。
+
+![截图\_20260203182313\.png](../../../../en/Multi-Master-Communication-Cases/IIC-Communication/Raspberry-Pi-5/Images/screenshot-20260203182313.png)
+
+## 4\.IMUデータの確認
+
+**\~/IMU\_Libraryディレクトリに入り、IMU\_Serial\_Library\.pyファイルを実行します**
+
+```PowerShell
+cd ~/imu_ros2/src/IMU_ROS1/IMU_Library
+
+# IMU データ出力ファイルを実行
+python3 -m IMU_Library.IMU_I2C_Library
+```
+
+![截图\_20260203175633\.png](../../../../en/Multi-Master-Communication-Cases/IIC-Communication/Raspberry-Pi-5/Images/screenshot-20260203175633.png)
+
+注意：以上は10軸IMUのデータ読み取りです。6軸には磁力計（Magnetometer）と気圧計（Barometer）のデータがなく、9軸には気圧計（Barometer）のデータがありません。
+
+## **5\.IMUキャリブレーション**
+
+**\~/IMU\_Libraryディレクトリに入り、imu\_calibration\_tool\.pyファイルを実行します**
+
+```PowerShell
+cd ~/IMU_Library
+
+# IMU キャリブレーションコードファイルを実行 --I2C 通信用キャリブレーション
+# すべてのキャリブレーションを実行（全体、磁力計、温度）
+python3 -m IMU_Library.imu_calibration_tool --mode i2c --port 1
+
+# 全体キャリブレーションのみ
+python3-m IMU_Library.imu_calibration_tool --mode i2c --port 1 --calibrate imu
+
+# 磁力計キャリブレーションのみ
+python3-m IMU_Library.imu_calibration_tool --mode i2c --port 1 --calibrate mag
+
+# 温度キャリブレーションのみ
+python3-m IMU_Library.imu_calibration_tool --mode i2c --port 1 --calibrate temp
+```
+
+![截图\_20260203174958\.png](../../../../en/Multi-Master-Communication-Cases/IIC-Communication/Raspberry-Pi-5/Images/screenshot-20260203174958.png)
+
+## 6\.注意事項
+
+Raspberry Pi 5では事前にi2cピンを有効化する必要があります。
+
+有効化の操作は以下のとおりです：
+
+ターミナルでコマンドを実行します
+
+```PowerShell
+sudo raspi-config
+```
+
+キーボードの方向キーで選択し、選択後にキーボードのEnterキーを押して進みます
+
+![截图\_20260203181325\.png](../../../../en/Multi-Master-Communication-Cases/IIC-Communication/Raspberry-Pi-5/Images/screenshot-20260203181325.png)
+
+I2Cを選択し、選択後にキーボードのEnterキーを押して進みます、
+
+![截图\_20260203181405\.png](../../../../en/Multi-Master-Communication-Cases/IIC-Communication/Raspberry-Pi-5/Images/screenshot-20260203181405.png)
+
+I2Cを選択した後、キーボードのEnterキーを押し、方向キーでYesを選択し、さらにEnterキーを押して確認します。
+
+![截图\_20260203181427\.png](../../../../en/Multi-Master-Communication-Cases/IIC-Communication/Raspberry-Pi-5/Images/screenshot-20260203181427.png)
+
+Enterキーを押して確認します
+
+![截图\_20260203181447\.png](../../../../en/Multi-Master-Communication-Cases/IIC-Communication/Raspberry-Pi-5/Images/screenshot-20260203181447.png)
+
+方向キーでFinishを選択し、Enterキーを押して設定を終了します。
+
+![截图\_20260203181510\.png](../../../../en/Multi-Master-Communication-Cases/IIC-Communication/Raspberry-Pi-5/Images/screenshot-20260203181510.png)
+
+
+

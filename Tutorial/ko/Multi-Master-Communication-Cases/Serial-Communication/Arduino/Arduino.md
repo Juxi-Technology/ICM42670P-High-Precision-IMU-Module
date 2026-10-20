@@ -1,0 +1,191 @@
+# Arduino
+
+이번 예제에서는 Arduino Nano 개발 보드, Windows 컴퓨터 1대, 점퍼 와이어 약간, IMU 자세 센서, USB-TTL 모듈을 사용합니다.
+
+[Arduino\.rar](/downloads/Arduino.rar)
+
+## 1\.장치 연결
+
+![高精度IMU姿态传感器\.png](../../../../en/Multi-Master-Communication-Cases/Serial-Communication/Arduino/Images/high-precision-imu-attitude-sensor.png)
+
+![高精度IMU姿态传感器 \(1\)\.png](../../../../en/Multi-Master-Communication-Cases/Serial-Communication/Arduino/Images/high-precision-imu-attitude-sensor-1.png)
+
+![v2\-5bfe8060e5e61480044f79ff6d5e27cd\_r\.jpg](../../../../en/Multi-Master-Communication-Cases/Serial-Communication/Arduino/Images/v2-5bfe8060e5e61480044f79ff6d5e27cd_r.jpg)
+
+## 2\.핵심 코드 분석
+
+구체적인 코드는 자료의 소스 코드를 참조하십시오.
+
+```C++
+//링 버퍼의 데이터를 파싱하고, 완전한 프레임을 추출하여 캐시를 갱신
+​
+//Process RX ring buffer, parse frames and update internal cache
+​
+void IMU_UART_Process(void)
+{
+    enum {
+        RX_STATE_EXPECT_HEAD1 = 0,
+        RX_STATE_EXPECT_HEAD2,
+        RX_STATE_EXPECT_LENGTH,
+        RX_STATE_EXPECT_FUNCTION,
+        RX_STATE_COLLECT_DATA
+    };
+
+    static uint8_t  rx_state = RX_STATE_EXPECT_HEAD1;
+    static uint8_t  frame_length = 0;
+    static uint8_t  frame_function = 0;
+    static uint8_t  frame_buffer[64]; /* 数据区 + 校验 / data section + checksum */
+    static uint16_t frame_index = 0;
+
+    uint8_t current_byte = 0;
+
+    // 링 버퍼의 모든 데이터 처리
+    while (_rxbuf_pop(&current_byte) == 0) {
+        switch (rx_state) {
+        case RX_STATE_EXPECT_HEAD1:
+            // 프레임 헤더1 탐색
+            if (current_byte == FRAME_HEAD1) {
+                rx_state = RX_STATE_EXPECT_HEAD2;
+            }
+            // 그렇지 않으면 현재 상태 유지
+            break;
+
+        case RX_STATE_EXPECT_HEAD2:
+            // 프레임 헤더2 탐색
+            if (current_byte == FRAME_HEAD2) {
+                rx_state = RX_STATE_EXPECT_LENGTH;
+            } else {
+                // 프레임 헤더 불일치, 다시 탐색 시작
+                rx_state = RX_STATE_EXPECT_HEAD1;
+            }
+            break;
+
+        case RX_STATE_EXPECT_LENGTH:
+            // 프레임 길이 저장
+            frame_length = current_byte;
+            rx_state = RX_STATE_EXPECT_FUNCTION;
+            break;
+
+        case RX_STATE_EXPECT_FUNCTION:
+            // 기능 코드 저장
+            frame_function = current_byte;
+            frame_index = 0;
+            rx_state = RX_STATE_COLLECT_DATA;
+            break;
+
+        case RX_STATE_COLLECT_DATA: {
+            // 데이터 길이 계산(프레임 길이 - 프레임 헤더 2바이트 - 길이 1바이트 - 기능 코드 1바이트)
+            uint16_t data_length = (frame_length >= 4) ? (uint16_t)(frame_length - 4) : 0;
+            
+            // 데이터 길이가 유효한지 확인
+            if (data_length == 0 || data_length > sizeof(frame_buffer)) {
+                rx_state = RX_STATE_EXPECT_HEAD1;
+                break;
+            }
+
+            // 현재 바이트 저장
+            frame_buffer[frame_index++] = current_byte;
+            
+            // 모든 데이터 수집 완료 여부 확인
+            if (frame_index >= data_length) {
+                // 체크섬 계산
+                uint8_t calculated_checksum = (uint8_t)(FRAME_HEAD1 + FRAME_HEAD2 + frame_length + frame_function);
+                for (uint16_t i = 0; i < data_length - 1; ++i) {
+                    calculated_checksum += frame_buffer[i];
+                }
+
+                // 체크섬 검증
+                uint8_t received_checksum = frame_buffer[data_length - 1];
+                if (calculated_checksum == received_checksum) {
+                    // 체크섬 검증 통과, 데이터 파싱
+                    _parse_frame_data(frame_function, frame_buffer);
+                }
+                
+                // 상태 초기화, 다음 프레임 수신 준비
+                rx_state = RX_STATE_EXPECT_HEAD1;
+            }
+        } break;
+
+        default:
+            // 알 수 없는 상태, 초기화
+            rx_state = RX_STATE_EXPECT_HEAD1;
+            break;
+        }
+    }
+}
+​
+​
+/* ---------- 解析数据帧 / Parse one complete frame ---------- */
+static void _parse_frame_data(uint8_t frame_function, const uint8_t *frame_data)
+{
+    switch (frame_function) {
+        case IMU_FUNC_RAW_ACCEL: {
+            // 상수 비율 인자 정의
+            const float ACCEL_RATIO = 16.0f / 32767.0f;
+            const float DEG2RAD = 3.14159265358979323846f / 180.0f;
+            const float GYRO_RATIO = (2000.0f / 32767.0f) * DEG2RAD;
+            const float MAG_RATIO = 800.0f / 32767.0f;
+            
+            // 가속도 데이터 파싱
+            s_ax = to_int16(&frame_data[0])  * ACCEL_RATIO;
+            s_ay = to_int16(&frame_data[2])  * ACCEL_RATIO;
+            s_az = to_int16(&frame_data[4])  * ACCEL_RATIO;
+
+            // 자이로 데이터 파싱
+            s_gx = to_int16(&frame_data[6])  * GYRO_RATIO;
+            s_gy = to_int16(&frame_data[8])  * GYRO_RATIO;
+            s_gz = to_int16(&frame_data[10]) * GYRO_RATIO;
+
+            // 자력계 데이터 파싱
+            s_mx = to_int16(&frame_data[12]) * MAG_RATIO;
+            s_my = to_int16(&frame_data[14]) * MAG_RATIO;
+            s_mz = to_int16(&frame_data[16]) * MAG_RATIO;
+            break;
+        }
+        case IMU_FUNC_EULER:
+            s_roll  = to_float(&frame_data[0]);
+            s_pitch = to_float(&frame_data[4]);
+            s_yaw   = to_float(&frame_data[8]);
+            break;
+        case IMU_FUNC_QUAT:
+            s_q0 = to_float(&frame_data[0]);
+            s_q1 = to_float(&frame_data[4]);
+            s_q2 = to_float(&frame_data[8]);
+            s_q3 = to_float(&frame_data[12]);
+            break;
+        case IMU_FUNC_BARO:
+            s_height            = to_float(&frame_data[0]);
+            s_temperature       = to_float(&frame_data[4]);
+            s_pressure          = to_float(&frame_data[8]);
+            s_pressure_contrast = to_float(&frame_data[12]);
+            break;
+        case IMU_FUNC_VERSION:
+            s_version_high = frame_data[0];
+            s_version_mid  = frame_data[1];
+            s_version_low  = frame_data[2];
+            break;
+        case IMU_FUNC_RETURN_STATE:
+            s_last_rx_function = frame_data[0];
+            s_last_rx_state    = (int16_t)frame_data[1];
+            break;
+        default:
+            // 알 수 없는 프레임 유형, 오류 처리 추가 가능
+            break;
+    }
+}
+```
+
+IMU\_UART\_Process\(\): 캐시된 데이터를 읽고 \_parse\_frame\_data를 호출하여 통신 프로토콜에 맞는 데이터를 파싱합니다.
+
+\_parse\_frame\_data\(\)：데이터 프레임을 파싱합니다.
+
+## 3\.IMU 데이터 읽기
+
+프로그램을 Arduino에 기록한 후 시리얼 어시스턴트를 열면(설정 파라미터는 아래 그림과 같음), IMU 모듈의 데이터가 계속 출력되는 것을 확인할 수 있습니다. IMU 모듈의 자세를 바꾸면 데이터가 변합니다.
+
+![截图\_20260226183106\.png](../../../../en/Multi-Master-Communication-Cases/Serial-Communication/Arduino/Images/screenshot-20260226183106.png)
+
+주의：위 내용은 10축 IMU의 데이터 읽기입니다. 6축에는 자력계(Magnetometer)와 기압계(Barometer) 데이터가 없고, 9축에는 기압계(Barometer) 데이터가 없습니다.
+
+
+
