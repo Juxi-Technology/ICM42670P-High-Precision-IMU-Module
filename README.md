@@ -12,7 +12,7 @@ This repository contains complete documentation, usage guides, application cases
 
 ## What's Included
 ### 📚 Documentation
-1. **Web Host Console Guide**: Browser-based JX IMU Studio tutorial — connect over Web Serial, monitor live data, view the 3D attitude and instruments, and run sensor calibration. Online console: https://juxi-technology.github.io/ICM42670P-High-Precision-IMU-Module/ (guide: `Tutorial/en/网页上位机使用教程/网页上位机使用教程.md`)
+1. **Web Host Console Guide**: Browser-based JX IMU Studio tutorial — connect over Web Serial, monitor live data, view the 3D attitude and instruments, and run sensor calibration. Online console: https://juxi-technology.github.io/ICM42670P-High-Precision-IMU-Module/ (guide: `Tutorial/en/Web-Host-Console-Tutorial/Web-Host-Console-Tutorial.md`)
 2. **Core Module Specification**: Complete version introduction, pin function description, product parameters, sensor performance metrics, and dimension drawings
 3. **Full Usage Tutorial**: Step-by-step guide for library installation, communication setup, and IMU calibration
 4. **Multi-Master Communication Guide**: Instructions for CH341 driver installation and multi-device communication configuration

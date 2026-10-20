@@ -34,7 +34,7 @@ python -m http.server 5173 --directory <web 目录>
 4. 上位机会自动识别 6 / 9 / 10 轴硬件并回显融合算法；10 轴设备实际下发 9 轴算法。
 5. 需要断开时点击「断开」。如果设备被拔出，页面会自动检测并提示。
 
-![连接设备与数据监测界面](../../en/网页上位机使用教程/图片和附件/01-overview.png)
+![连接设备与数据监测界面](../../en/Web-Host-Console-Tutorial/Images/01-overview.png)
 
 > 首次使用时，浏览器会要求授权访问串口；请选择与 IMU 对应的设备。若列表为空，请先安装 USB 转串口驱动。
 
@@ -73,7 +73,7 @@ python -m http.server 5173 --directory <web 目录>
 - **暂停**冻结曲线，**清空**重置缓冲；切换分组不会清空其他分组数据。
 - 图例会显示当前通道的最新值。
 
-![实时曲线](../../en/网页上位机使用教程/图片和附件/02-plots.png)
+![实时曲线](../../en/Web-Host-Console-Tutorial/Images/02-plots.png)
 
 > 欧拉角曲线在 Yaw 从 360° 回到 0° 时会出现一条竖直跳变线，这是角度回绕，不是数据错误。
 
@@ -86,7 +86,7 @@ python -m http.server 5173 --directory <web 目录>
 - **标定当前位置**：把当前姿态设为零位，只影响 3D 显示，不写入设备。
 - **重置标定**：清除零位偏移。
 
-![3D 姿态](../../en/网页上位机使用教程/图片和附件/03-attitude.png)
+![3D 姿态](../../en/Web-Host-Console-Tutorial/Images/03-attitude.png)
 
 ## 八、动态仪表
 
@@ -95,7 +95,7 @@ python -m http.server 5173 --directory <web 目录>
 - 若转动设备时表盘上的 N 跟着设备转（不指北），勾选连接面板的「罗盘反向」。
 - 若抬头时显示低头，勾选「俯仰翻转」（Roll 和 Pitch 同时取反）。
 
-![动态仪表](../../en/网页上位机使用教程/图片和附件/04-instruments.png)
+![动态仪表](../../en/Web-Host-Console-Tutorial/Images/04-instruments.png)
 
 ## 九、传感器校准
 
@@ -108,7 +108,7 @@ python -m http.server 5173 --directory <web 目录>
 
 校准期间按钮会被禁用并显示「校准中…」；完成后日志显示「校准完成（状态 0）」或相应状态码。若等待超时，页面会给出警告，请检查连接后重试。
 
-![传感器校准](../../en/网页上位机使用教程/图片和附件/05-calibration.png)
+![传感器校准](../../en/Web-Host-Console-Tutorial/Images/05-calibration.png)
 
 ## 十、方向修正
 

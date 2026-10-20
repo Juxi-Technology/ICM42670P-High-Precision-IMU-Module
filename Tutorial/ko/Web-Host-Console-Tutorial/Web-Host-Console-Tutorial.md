@@ -34,7 +34,7 @@ python -m http.server 5173 --directory <web 디렉터리>
 4. 6 / 9 / 10축 하드웨어를 자동 감지하고 융합 알고리즘을 표시합니다. 10축 장치에는 9축 알고리즘이 전송됩니다.
 5. 종료할 때는 「연결 끊기」를 클릭합니다. 장치를 뽑으면 자동으로 연결이 끊어집니다.
 
-![연결 및 모니터 화면](../../en/网页上位机使用教程/图片和附件/01-overview.png)
+![연결 및 모니터 화면](../../en/Web-Host-Console-Tutorial/Images/01-overview.png)
 
 > 처음 사용할 때 브라우저가 시리얼 포트 접근 권한을 요청합니다. 목록이 비어 있으면 USB-시리얼 드라이버를 먼저 설치하십시오.
 
@@ -73,7 +73,7 @@ python -m http.server 5173 --directory <web 디렉터리>
 - **일시정지**는 그래프를 고정하고 **지우기**는 버퍼를 초기화합니다. 그룹을 전환해도 다른 그룹 데이터는 지워지지 않습니다.
 - 범례에 각 채널의 최신 값이 표시됩니다.
 
-![실시간 플롯](../../en/网页上位机使用教程/图片和附件/02-plots.png)
+![실시간 플롯](../../en/Web-Host-Console-Tutorial/Images/02-plots.png)
 
 > 오일러 각에서 Yaw가 360°에서 0°로 돌아갈 때 세로 점프선이 나타나는데, 이는 각도 랩어라운드이며 데이터 오류가 아닙니다.
 
@@ -86,7 +86,7 @@ python -m http.server 5173 --directory <web 디렉터리>
 - **현재 위치 영점 캘리브레이션**: 현재 자세를 영점으로 설정합니다. 3D 표시에만 영향을 주며 장치에 기록하지 않습니다.
 - **교정 초기화**: 영점 오프셋을 제거합니다.
 
-![3D 자세](../../en/网页上位机使用教程/图片和附件/03-attitude.png)
+![3D 자세](../../en/Web-Host-Console-Tutorial/Images/03-attitude.png)
 
 ## 8. 계기
 
@@ -95,7 +95,7 @@ python -m http.server 5173 --directory <web 디렉터리>
 - 장치를 돌릴 때 N이 북쪽을 가리키지 않고 함께 움직이면 연결 바의 **Compass invert**를 켭니다.
 - 기수 상승이 하강으로 표시되면 **Pitch flip**을 켭니다(Roll과 Pitch가 모두 반전됨).
 
-![계기](../../en/网页上位机使用教程/图片和附件/04-instruments.png)
+![계기](../../en/Web-Host-Console-Tutorial/Images/04-instruments.png)
 
 ## 9. 센서 캘리브레이션
 
@@ -108,7 +108,7 @@ python -m http.server 5173 --directory <web 디렉터리>
 
 캘리브레이션 중에는 버튼이 비활성화되고 「캘리브레이션 중…」이 표시됩니다. 완료되면 로그에 「캘리브레이션 완료(상태 0)」 또는 반환된 상태가 표시됩니다. 시간 초과 시 경고가 나오면 연결을 확인하고 다시 시도하십시오.
 
-![센서 캘리브레이션](../../en/网页上位机使用教程/图片和附件/05-calibration.png)
+![센서 캘리브레이션](../../en/Web-Host-Console-Tutorial/Images/05-calibration.png)
 
 ## 10. 방향 보정
 

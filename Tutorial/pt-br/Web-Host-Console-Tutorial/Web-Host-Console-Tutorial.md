@@ -34,7 +34,7 @@ Depois abra <http://localhost:5173>. O Web Serial exige um contexto seguro (HTTP
 4. A console detecta automaticamente hardware de 6 / 9 / 10 eixos e exibe o algoritmo de fusão; dispositivos de 10 eixos usam o algoritmo de 9 eixos.
 5. Clique em **Desconectar** ao terminar. Se o dispositivo for removido, a página desconecta automaticamente.
 
-![Conexão e monitoramento](../../en/网页上位机使用教程/图片和附件/01-overview.png)
+![Conexão e monitoramento](../../en/Web-Host-Console-Tutorial/Images/01-overview.png)
 
 > No primeiro uso, o navegador solicita permissão para acessar a porta serial. Se a lista estiver vazia, instale primeiro o driver USB-serial.
 
@@ -73,7 +73,7 @@ A barra colorida abaixo de cada valor mostra a proporção em relação ao fundo
 - **Pausar** congela o gráfico; **Limpar** reinicia os buffers. Trocar de grupo não apaga os outros.
 - A legenda mostra o valor mais recente de cada canal.
 
-![Gráficos em tempo real](../../en/网页上位机使用教程/图片和附件/02-plots.png)
+![Gráficos em tempo real](../../en/Web-Host-Console-Tutorial/Images/02-plots.png)
 
 > O gráfico de ângulos de Euler mostra um salto vertical quando o Yaw passa de 360° para 0°; é um envolvimento de ângulo, não um erro de dados.
 
@@ -86,7 +86,7 @@ A barra colorida abaixo de cada valor mostra a proporção em relação ao fundo
 - **Calibrar posição atual**: define a atitude atual como zero; afeta apenas a visualização 3D e não é gravado no dispositivo.
 - **Redefinir calibração**: remove o deslocamento de zero.
 
-![Atitude 3D](../../en/网页上位机使用教程/图片和附件/03-attitude.png)
+![Atitude 3D](../../en/Web-Host-Console-Tutorial/Images/03-attitude.png)
 
 ## 8. Instrumentos
 
@@ -95,7 +95,7 @@ A barra colorida abaixo de cada valor mostra a proporção em relação ao fundo
 - Se o N acompanhar o dispositivo em vez de apontar para o norte, ative **Compass invert**.
 - Se nariz para cima aparecer como nariz para baixo, ative **Pitch flip** (Roll e Pitch são invertidos juntos).
 
-![Instrumentos](../../en/网页上位机使用教程/图片和附件/04-instruments.png)
+![Instrumentos](../../en/Web-Host-Console-Tutorial/Images/04-instruments.png)
 
 ## 9. Calibração dos sensores
 
@@ -108,7 +108,7 @@ A página de calibração oferece quatro operações; o log mostra o código de 
 
 Os botões ficam desabilitados durante a calibração e o status mostra **Calibrando…**. Ao terminar, o log mostra **Calibração concluída (status 0)** ou o status retornado. Em caso de timeout, aparece um aviso; verifique a conexão e tente novamente.
 
-![Calibração dos sensores](../../en/网页上位机使用教程/图片和附件/05-calibration.png)
+![Calibração dos sensores](../../en/Web-Host-Console-Tutorial/Images/05-calibration.png)
 
 ## 10. Correções de direção
 

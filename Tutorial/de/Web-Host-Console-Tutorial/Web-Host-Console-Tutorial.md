@@ -34,7 +34,7 @@ python -m http.server 5173 --directory <web-Verzeichnis>
 4. Die Konsole erkennt 6 / 9 / 10-Achsen-Hardware automatisch und zeigt den Fusionsalgorithmus an; 10-Achsen-Geräte verwenden den 9-Achsen-Algorithmus.
 5. Klicken Sie zum Beenden auf **Trennen**. Wird das Gerät abgezogen, trennt die Seite automatisch.
 
-![Verbindung und Monitor](../../en/网页上位机使用教程/图片和附件/01-overview.png)
+![Verbindung und Monitor](../../en/Web-Host-Console-Tutorial/Images/01-overview.png)
 
 > Beim ersten Zugriff fragt der Browser nach der Berechtigung für den seriellen Port. Ist die Liste leer, installieren Sie zuerst den USB-Seriell-Treiber.
 
@@ -73,7 +73,7 @@ Der farbige Balken unter jedem Wert zeigt den Anteil am Vollbereich.
 - **Pause** friert das Diagramm ein, **Löschen** setzt die Puffer zurück. Der Gruppenwechsel löscht keine anderen Gruppen.
 - Die Legende zeigt den aktuellen Wert jedes Kanals.
 
-![Echtzeitdiagramme](../../en/网页上位机使用教程/图片和附件/02-plots.png)
+![Echtzeitdiagramme](../../en/Web-Host-Console-Tutorial/Images/02-plots.png)
 
 > Bei den Euler-Winkeln entsteht ein vertikaler Sprung, wenn Yaw von 360° auf 0° zurückspringt. Das ist ein Winkel-Wrap, kein Datenfehler.
 
@@ -86,7 +86,7 @@ Der farbige Balken unter jedem Wert zeigt den Anteil am Vollbereich.
 - **Aktuelle Position als Nullpunkt**: setzt die aktuelle Lage als Nullpunkt; wirkt nur auf die 3D-Ansicht und wird nicht ins Gerät geschrieben.
 - **Kalibrierung zurücksetzen**: entfernt den Nullpunkt-Offset.
 
-![3D-Lage](../../en/网页上位机使用教程/图片和附件/03-attitude.png)
+![3D-Lage](../../en/Web-Host-Console-Tutorial/Images/03-attitude.png)
 
 ## 8. Instrumente
 
@@ -95,7 +95,7 @@ Der farbige Balken unter jedem Wert zeigt den Anteil am Vollbereich.
 - Wenn N dem Gerät folgt statt nach Norden zu zeigen, aktivieren Sie **Compass invert**.
 - Wenn Nase hoch als Nase tief dargestellt wird, aktivieren Sie **Pitch flip** (Roll und Pitch werden beide invertiert).
 
-![Instrumente](../../en/网页上位机使用教程/图片和附件/04-instruments.png)
+![Instrumente](../../en/Web-Host-Console-Tutorial/Images/04-instruments.png)
 
 ## 9. Sensorkalibrierung
 
@@ -108,7 +108,7 @@ Die Kalibrierungsseite bietet vier Aktionen; das Protokoll zeigt den vom Gerät 
 
 Während der Kalibrierung sind die Schaltflächen deaktiviert und zeigen **Kalibrierung läuft…**. Danach erscheint **Kalibrierung abgeschlossen (Status 0)** oder der zurückgegebene Status. Bei Zeitüberschreitung erscheint eine Warnung; Verbindung prüfen und erneut versuchen.
 
-![Sensorkalibrierung](../../en/网页上位机使用教程/图片和附件/05-calibration.png)
+![Sensorkalibrierung](../../en/Web-Host-Console-Tutorial/Images/05-calibration.png)
 
 ## 10. Richtungskorrekturen
 

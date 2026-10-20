@@ -34,7 +34,7 @@ python -m http.server 5173 --directory <web 目錄>
 4. 上位機會自動識別 6 / 9 / 10 軸硬體並回顯融合演算法；10 軸裝置實際下發 9 軸演算法。
 5. 需要斷開時點擊「斷開」。裝置被拔出時頁面會自動偵測並提示。
 
-![連接與資料監測介面](../../en/网页上位机使用教程/图片和附件/01-overview.png)
+![連接與資料監測介面](../../en/Web-Host-Console-Tutorial/Images/01-overview.png)
 
 > 首次使用時瀏覽器會要求授權存取串列埠；若清單為空，請先安裝 USB 轉串列埠驅動。
 
@@ -73,7 +73,7 @@ python -m http.server 5173 --directory <web 目錄>
 - **暫停**凍結曲線，**清空**重置緩衝；切換分組不會清空其他分組。
 - 圖例顯示目前通道的最新值。
 
-![即時曲線](../../en/网页上位机使用教程/图片和附件/02-plots.png)
+![即時曲線](../../en/Web-Host-Console-Tutorial/Images/02-plots.png)
 
 > 歐拉角曲線在 Yaw 由 360° 回到 0° 時會出現垂直跳變線，這是角度回繞，不是資料錯誤。
 
@@ -86,7 +86,7 @@ python -m http.server 5173 --directory <web 目錄>
 - **標定目前位置**：把目前姿態設為零位，只影響 3D 顯示，不寫入裝置。
 - **重置標定**：清除零位偏移。
 
-![3D 姿態](../../en/网页上位机使用教程/图片和附件/03-attitude.png)
+![3D 姿態](../../en/Web-Host-Console-Tutorial/Images/03-attitude.png)
 
 ## 八、動態儀表
 
@@ -95,7 +95,7 @@ python -m http.server 5173 --directory <web 目錄>
 - 若轉動裝置時表盤上的 N 跟著裝置轉（不指北），勾選「羅盤反向」。
 - 若抬頭時顯示低頭，勾選「俯仰翻轉」（Roll 和 Pitch 同時取反）。
 
-![動態儀表](../../en/网页上位机使用教程/图片和附件/04-instruments.png)
+![動態儀表](../../en/Web-Host-Console-Tutorial/Images/04-instruments.png)
 
 ## 九、感測器校準
 
@@ -108,7 +108,7 @@ python -m http.server 5173 --directory <web 目錄>
 
 校準期間按鈕會停用並顯示「校準中…」；完成後日誌顯示「校準完成（狀態 0）」或對應狀態碼。等待逾時時頁面會提示，請檢查連接後重試。
 
-![感測器校準](../../en/网页上位机使用教程/图片和附件/05-calibration.png)
+![感測器校準](../../en/Web-Host-Console-Tutorial/Images/05-calibration.png)
 
 ## 十、方向修正
 

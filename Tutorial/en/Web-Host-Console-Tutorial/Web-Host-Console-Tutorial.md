@@ -34,7 +34,7 @@ Then open <http://localhost:5173>. Web Serial requires a secure context (HTTPS o
 4. The console detects 6 / 9 / 10-axis hardware automatically and reflects the fusion algorithm; 10-axis devices use the 9-axis algorithm.
 5. Click **Disconnect** when finished. If the device is unplugged, the page detects it and disconnects automatically.
 
-![Connection and monitor](图片和附件/01-overview.png)
+![Connection and monitor](Images/01-overview.png)
 
 > The browser asks for permission to access the serial port on first use. If the list is empty, install the USB-to-serial driver first.
 
@@ -73,7 +73,7 @@ The colored meter below each value shows its ratio to the full scale.
 - **Pause** freezes the chart; **Clear** resets the buffers. Switching groups does not clear other groups.
 - The legend shows the latest value of each channel.
 
-![Rolling plots](图片和附件/02-plots.png)
+![Rolling plots](Images/02-plots.png)
 
 > The Euler-angle plot shows a vertical jump when Yaw wraps from 360° back to 0°; this is angle wrapping, not a data error.
 
@@ -86,7 +86,7 @@ The colored meter below each value shows its ratio to the full scale.
 - **Calibrate zero** sets the current attitude as the zero reference; it only affects the 3D view and is not written to the device.
 - **Reset zero** clears the zero offset.
 
-![3D attitude](图片和附件/03-attitude.png)
+![3D attitude](Images/03-attitude.png)
 
 ## 8. Instruments
 
@@ -95,7 +95,7 @@ The colored meter below each value shows its ratio to the full scale.
 - If N follows the device instead of pointing north, enable **Compass invert** in the connection bar.
 - If nose-up is displayed as nose-down, enable **Pitch flip** (Roll and Pitch are both inverted).
 
-![Instruments](图片和附件/04-instruments.png)
+![Instruments](Images/04-instruments.png)
 
 ## 9. Sensor calibration
 
@@ -108,7 +108,7 @@ The calibration page offers four operations; the activity log shows the status c
 
 Buttons are disabled while a calibration is running and the status shows **Calibrating…**. When finished, the log shows **Calibration done (status 0)** or the returned status. If the wait times out, the page shows a warning; check the connection and retry.
 
-![Sensor calibration](图片和附件/05-calibration.png)
+![Sensor calibration](Images/05-calibration.png)
 
 ## 10. Direction corrections
 

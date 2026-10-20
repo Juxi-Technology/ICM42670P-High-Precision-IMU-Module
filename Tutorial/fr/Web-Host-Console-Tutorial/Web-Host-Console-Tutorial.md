@@ -34,7 +34,7 @@ Ouvrez ensuite <http://localhost:5173>. Web Serial exige un contexte sécurisé 
 4. La console détecte automatiquement les appareils 6 / 9 / 10 axes et affiche l'algorithme de fusion ; les appareils 10 axes utilisent l'algorithme 9 axes.
 5. Cliquez sur **Déconnecter** pour terminer. Si l'appareil est débranché, la page se déconnecte automatiquement.
 
-![Connexion et surveillance](../../en/网页上位机使用教程/图片和附件/01-overview.png)
+![Connexion et surveillance](../../en/Web-Host-Console-Tutorial/Images/01-overview.png)
 
 > Lors de la première utilisation, le navigateur demande l'autorisation d'accéder au port série. Si la liste est vide, installez d'abord le pilote USB-série.
 
@@ -73,7 +73,7 @@ La barre colorée sous chaque valeur indique le rapport à la pleine échelle.
 - **Pause** fige le graphique ; **Effacer** réinitialise les tampons. Changer de groupe n'efface pas les autres groupes.
 - La légende affiche la dernière valeur de chaque voie.
 
-![Courbes en temps réel](../../en/网页上位机使用教程/图片和附件/02-plots.png)
+![Courbes en temps réel](../../en/Web-Host-Console-Tutorial/Images/02-plots.png)
 
 > La courbe d'angle d'Euler présente un saut vertical lorsque Yaw passe de 360° à 0° : il s'agit d'un repliement d'angle, pas d'une erreur de données.
 
@@ -86,7 +86,7 @@ La barre colorée sous chaque valeur indique le rapport à la pleine échelle.
 - **Calibrer la position actuelle** : définit l'attitude actuelle comme zéro ; cela n'affecte que la vue 3D et n'est pas écrit dans l'appareil.
 - **Réinitialiser la calibration** : efface le décalage du zéro.
 
-![Attitude 3D](../../en/网页上位机使用教程/图片和附件/03-attitude.png)
+![Attitude 3D](../../en/Web-Host-Console-Tutorial/Images/03-attitude.png)
 
 ## 8. Instruments
 
@@ -95,7 +95,7 @@ La barre colorée sous chaque valeur indique le rapport à la pleine échelle.
 - Si le N suit l'appareil au lieu d'indiquer le nord, activez **Compass invert**.
 - Si le nez vers le haut est affiché vers le bas, activez **Pitch flip** (Roll et Pitch sont tous deux inversés).
 
-![Instruments](../../en/网页上位机使用教程/图片和附件/04-instruments.png)
+![Instruments](../../en/Web-Host-Console-Tutorial/Images/04-instruments.png)
 
 ## 9. Calibration des capteurs
 
@@ -108,7 +108,7 @@ La page de calibration propose quatre opérations ; le journal affiche le code d
 
 Les boutons sont désactivés pendant la calibration et l'état affiche **Calibration en cours…**. À la fin, le journal affiche **Calibration terminée (état 0)** ou le code renvoyé. En cas de délai dépassé, un avertissement s'affiche ; vérifiez la connexion et réessayez.
 
-![Calibration des capteurs](../../en/网页上位机使用教程/图片和附件/05-calibration.png)
+![Calibration des capteurs](../../en/Web-Host-Console-Tutorial/Images/05-calibration.png)
 
 ## 10. Corrections de direction
 
