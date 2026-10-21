@@ -151,11 +151,6 @@ function init() {
 
   setInterval(tick, 50);
   requestAnimationFrame(renderLoop);
-
-  // Optional debug hooks for local development/testing (?debug).
-  if (new URLSearchParams(location.search).has('debug')) {
-    window.__IMU_DEBUG__ = { state, att3d, plotView, switchTab };
-  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -767,7 +762,10 @@ function bindEvents() {
   });
 
   for (const btn of [...els.calTiles, els.tempCalBtn]) {
-    btn.addEventListener('click', () => runCalibration(btn.dataset.calib));
+    btn.addEventListener('click', () => {
+      if (btn.dataset.calib === 'reset' && !window.confirm(t('cal.resetConfirm'))) return;
+      runCalibration(btn.dataset.calib);
+    });
   }
 
   els.clearLogBtn.addEventListener('click', () => {

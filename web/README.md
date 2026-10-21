@@ -55,6 +55,15 @@ GitHub Pages 默认提供 HTTPS，满足 Web Serial 的安全上下文要求。�
 - 站点体积应远低于 GitHub Pages 的 1 GB 限制；本工具全部资源约 200 KB。
 - 不要把密码、令牌、内网 IP 等敏感信息写进文档或示例代码。
 
+## 安全说明
+
+- 本工具是纯静态页面，没有后端、登录或遥测；串口数据只在浏览器本地解析和显示。
+- Web Serial 权限按 **origin** 保存。当前站点部署在 `juxi-technology.github.io` 下，同一 origin 的其他 GitHub Pages 项目也会共享已授权的串口权限；请确保同源代码可信。需要更强隔离时，建议使用独立域名部署。
+- 授权串口前请确认地址栏是官方地址；可在 Chrome / Edge 的站点设置中撤销串口权限。
+- 页面通过 `<meta>` 设置了 Content-Security-Policy 和 `no-referrer`。GitHub Pages 不支持自定义响应头，因此 `frame-ancestors` / `X-Frame-Options` 无法生效；点击劫持防护需要自定义托管。
+- 「重置校准数据」等破坏性操作有二次确认。串口握手中没有传输层认证，只应连接可信设备。
+- 安全问题请私下联系 `pe@juxitech.com`，不要公开提交 issue。
+
 ## 使用流程
 
 1. 打开页面 → 点击「选择串口设备」并授权。
