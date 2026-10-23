@@ -21,6 +21,7 @@ This repository contains complete documentation, usage guides, application cases
   - MobaXterm installation and usage tutorial for SSH/SFTP remote management
   - WinSCP step-by-step guide for Windows-based SSH file transfer
 7. **MicroDuck Integration**: Replacing a MicroDuck biped robot's trunk IMU with this module over I²C — wiring, verification commands, and why it is not Dynamixel ID 200 (`Tutorial/en/MicroDuck-Integration/MicroDuck-Integration.md`). Full guide and code: https://github.com/Juxi-Technology/imu-displace-microduck
+8. **Changing the IMU Output Rate**: serial rate configuration with the `0x60` frame, measured results, flash persistence, and why the I²C rate is fixed at ~115–118 Hz (`Tutorial/en/Change-IMU-Refresh-Rate/Change-IMU-Refresh-Rate.md`)
 ### 📦 Supporting Resources
 - **Serial Communication uartassist5.15.zip**: Serial port debugging tool for communication testing
 - **IMU_ROS1.zip**: Preconfigured ROS1 package for out-of-the-box IMU integration
